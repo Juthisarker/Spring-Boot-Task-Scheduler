@@ -1,70 +1,60 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "tasks")
+@Data                       // getters, setters, equals, hashCode, toString
+@NoArgsConstructor          // JPA requires no-arg constructor
+@AllArgsConstructor         // all-args constructor
+@Builder                    // builder pattern
 public class Task {
 
     @Id
-    @Column(name = "id")
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "id", columnDefinition = "UUID")
     private UUID id;
 
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     private String type;
 
     @Column(name = "payload", columnDefinition = "TEXT")
     private String payload;
 
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "runAt")
+    @Column(name = "run_at", nullable = false)
     private Instant runAt;
 
-    @Column(name = "attempts")
+    @Column(name = "attempts", nullable = false)
     private Integer attempts;
 
-    @Column(name = "maxAttempts")
+    @Column(name = "max_attempts", nullable = false)
     private Integer maxAttempts;
 
-    // No-arg constructor required by JPA
-    public Task() {}
-
-    // All-args constructor
-    public Task(UUID id, String type, String payload, String status,
-                Instant runAt, Integer attempts, Integer maxAttempts) {
-        this.id = id;
-        this.type = type;
-        this.payload = payload;
-        this.status = status;
-        this.runAt = runAt;
-        this.attempts = attempts;
-        this.maxAttempts = maxAttempts;
-    }
-
+    // Lifecycle hook
     @PrePersist
-    public void init() {
-        if (id == null) id = UUID.randomUUID();
+    public void prePersist() {
         if (status == null) status = "PENDING";
         if (runAt == null) runAt = Instant.now();
         if (attempts == null) attempts = 0;
         if (maxAttempts == null) maxAttempts = 5;
     }
 
-    // ----------------------
     // Domain methods
-    // ----------------------
-
     public void updateStatus(String newStatus) {
         this.status = newStatus;
     }
 
     public void incrementAttempts() {
-        if (attempts == null) attempts = 0;
-        this.attempts++;
+        this.attempts = (attempts == null ? 0 : attempts) + 1;
     }
 
     public boolean hasReachedMaxAttempts() {
@@ -74,30 +64,4 @@ public class Task {
     public void reschedule(Instant newRunAt) {
         this.runAt = newRunAt;
     }
-
-    // ----------------------
-    // Getters and Setters
-    // ----------------------
-
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
-    public String getPayload() { return payload; }
-    public void setPayload(String payload) { this.payload = payload; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public Instant getRunAt() { return runAt; }
-    public void setRunAt(Instant runAt) { this.runAt = runAt; }
-
-    public Integer getAttempts() { return attempts; }
-    public void setAttempts(Integer attempts) { this.attempts = attempts; }
-
-    public Integer getMaxAttempts() { return maxAttempts; }
-    public void setMaxAttempts(Integer maxAttempts) { this.maxAttempts = maxAttempts; }
 }
-

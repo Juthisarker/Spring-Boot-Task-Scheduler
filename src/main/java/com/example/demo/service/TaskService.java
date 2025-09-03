@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.Task;
 import com.example.demo.repository.TaskRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,20 +12,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor // Lombok: generates constructor for final fields
 public class TaskService {
 
     private final TaskRepository repo;
 
-    public TaskService(TaskRepository repo) {
-        this.repo = repo;
-    }
-
     @Transactional
     public Task createTask(Task task) {
-        if (task.getRunAt() == null) task.setRunAt(Instant.now());
-        if (task.getStatus() == null) task.setStatus("PENDING");
-        if (task.getAttempts() == null) task.setAttempts(0);
-        if (task.getMaxAttempts() == null) task.setMaxAttempts(5);
+        // JPA @PrePersist will already set defaults,
+        // so here you don’t need to duplicate unless you want overrides.
         return repo.save(task);
     }
 
@@ -49,5 +45,34 @@ public class TaskService {
     @Transactional
     public void deleteTask(UUID id) {
         repo.deleteById(id);
+    }
+
+    // -------------------------
+    // Extra methods for scheduler
+    // -------------------------
+
+//    @Transactional(readOnly = true)
+//    public List<Task> getDueTasks(int limit) {
+//        return repo.findTop10ByStatusAndRunAtBeforeOrderByRunAtAsc("PENDING", Instant.now());
+//    }
+
+    @Transactional(readOnly = true)
+    public List<Task> getDueTasks(int limit) {
+        // Currently hardcoded to top 10
+        // You can modify repository method to accept dynamic limit if needed
+        return repo.findTop10ByStatusAndRunAtBeforeOrderByRunAtAsc("PENDING", Instant.now());
+    }
+
+    @Transactional
+    public Task updateTask(Task task) {
+        return repo.save(task);
+    }
+
+    @Transactional
+    public Task incrementAttempts(UUID id) {
+        Task task = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + id));
+        task.incrementAttempts();
+        return repo.save(task);
     }
 }

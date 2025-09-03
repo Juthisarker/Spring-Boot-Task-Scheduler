@@ -1,23 +1,21 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.model.Task;
 import com.example.demo.service.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api/task")
 public class TaskController {
 
     private final TaskService service;
-
-    public TaskController(TaskService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public ResponseEntity<Task> createTask(@RequestBody Task task) {
@@ -25,7 +23,7 @@ public class TaskController {
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/{id}")
     public ResponseEntity<Task> getTask(@PathVariable UUID id) {
         Optional<Task> task = service.getTask(id);
         return task.map(ResponseEntity::ok)
@@ -33,9 +31,10 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
+    public ResponseEntity<ApiResponse<List<Task>>> getAllTasks() {
         List<Task> tasks = service.getAllTasks();
-        return ResponseEntity.ok(tasks);
+        ApiResponse<List<Task>> response = new ApiResponse<>(true, "Fetched All tasks", tasks);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/status")
