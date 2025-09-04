@@ -59,8 +59,11 @@ public class TaskService {
     @Transactional(readOnly = true)
     public List<Task> getDueTasks(int limit) {
         // Currently hardcoded to top 10
-        // You can modify repository method to accept dynamic limit if needed
-        return repo.findTop10ByStatusAndRunAtBeforeOrderByRunAtAsc("PENDING", Instant.now());
+        Instant now = Instant.now();
+        List<Task> dueTasks = repo.findTop10ByStatusOrderByRunAtAsc("PENDING");
+        System.out.println("Current UTC time: " + now);
+        System.out.println("Due tasks fetched: " + dueTasks.size());
+        return dueTasks;
     }
 
     @Transactional

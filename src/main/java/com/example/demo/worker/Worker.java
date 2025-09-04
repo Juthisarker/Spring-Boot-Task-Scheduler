@@ -26,7 +26,7 @@ public class Worker implements CommandLineRunner {
             try {
                 // Blocking pop from Redis (timeout = 0 means block until a task arrives)
                 String payload = redisTemplate.opsForList()
-                        .leftPop(QUEUE_KEY, java.time.Duration.ofSeconds(0));
+                        .leftPop(QUEUE_KEY, java.time.Duration.ofSeconds(10));
 
                 if (payload != null) {
                     Task task = objectMapper.readValue(payload, Task.class);

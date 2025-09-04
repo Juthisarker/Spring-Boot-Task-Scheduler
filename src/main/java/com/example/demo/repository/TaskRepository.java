@@ -8,8 +8,9 @@ import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, UUID> {
     // Find top N pending tasks that are due, ordered by runAt ascending
-    List<Task> findTop10ByStatusAndRunAtBeforeOrderByRunAtAsc(String status, Instant runAt);
+  //  List<Task> findTop10ByStatusAndRunAtBeforeOrderByRunAtAsc(String status);
+    List<Task> findTop10ByStatusOrderByRunAtAsc(String status);
 
     // Or generic version to allow a limit:
-    List<Task> findTopByStatusAndRunAtBeforeOrderByRunAtAsc(String status, Instant runAt);
+  //  List<Task> findTopByStatusAndRunAtBeforeOrderByRunAtAsc(String status, Instant runAt);
 }
